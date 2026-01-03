@@ -108,6 +108,10 @@ export function useWorkouts() {
     })
   }, [sessions])
 
+  const getSessionCount = useCallback((type?: ExerciseType) => {
+    return sessions.filter(s => !type || s.exercise_type === type).length
+  }, [sessions])
+
   const getStreak = useCallback(() => {
     if (sessions.length === 0) return 0
 
@@ -149,6 +153,7 @@ export function useWorkouts() {
     deleteSession,
     fetchSessions,
     getTotalTime,
+    getSessionCount,
     getSessionsThisWeek,
     getSessionsThisMonth,
     getStreak,

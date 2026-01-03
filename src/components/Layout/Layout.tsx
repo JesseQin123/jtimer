@@ -2,13 +2,22 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 const navItems = [
   { path: '/', icon: 'home', label: '首页' },
-  { path: '/history', icon: 'history', label: '记录' },
   { path: '/stats', icon: 'leaderboard', label: '统计' },
+  { path: '/achievements', icon: 'emoji_events', label: '成就' },
+  { path: '/settings', icon: 'settings', label: '设置' },
 ]
 
 export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
+
+  const handleNavClick = (path: string) => {
+    // Only navigate for implemented pages
+    if (path === '/' || path === '/stats' || path === '/history') {
+      navigate(path)
+    }
+    // For achievements and settings, do nothing for now
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
@@ -21,17 +30,18 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* Bottom navigation */}
+      {/* Bottom navigation - 4 tabs */}
       <nav className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-white/10 z-50 safe-area-bottom">
-        <div className="flex justify-around items-center h-20 max-w-lg mx-auto px-4">
+        <div className="flex justify-between items-start h-24 max-w-lg mx-auto px-6">
           {navItems.map(item => {
             const isActive = location.pathname === item.path
+            const isImplemented = item.path === '/' || item.path === '/stats' || item.path === '/history'
             return (
               <button
                 key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-1.5 py-2 px-6 transition-colors ${
-                  isActive ? 'text-primary' : 'text-text-secondary hover:text-white'
+                onClick={() => handleNavClick(item.path)}
+                className={`flex flex-col items-center gap-1.5 pt-3 w-16 transition-colors ${
+                  isActive ? 'text-primary' : isImplemented ? 'text-text-secondary hover:text-white' : 'text-text-tertiary'
                 }`}
               >
                 <span className={`material-icons-round text-2xl ${isActive ? 'text-primary' : ''}`}>

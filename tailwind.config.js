@@ -7,11 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary colors
-        primary: '#FA2D48',
-        'primary-dark': '#D92E46',
-        accent: '#D2FF0F',
-        'accent-light': '#9CFF32',
+        // Primary colors - Neon Pink/Green
+        primary: '#FF00CC',
+        'primary-dark': '#CC00A3',
+        secondary: '#00FF66',
+        accent: '#CC00FF', // Purple for secondary rings
 
         // Background colors
         background: '#000000',
@@ -34,10 +34,12 @@ export default {
         '5xl': '2.5rem',
       },
       boxShadow: {
-        'glow-primary': '0 0 20px rgba(250, 45, 72, 0.4)',
-        'glow-accent': '0 0 15px rgba(210, 255, 15, 0.3)',
-        'glow-sm-primary': '0 0 10px rgba(250, 45, 72, 0.3)',
-        'glow-sm-accent': '0 0 10px rgba(210, 255, 15, 0.25)',
+        'glow-primary': '0 0 20px rgba(255, 0, 204, 0.4)',
+        'glow-secondary': '0 0 15px rgba(0, 255, 102, 0.3)',
+        'glow-accent': '0 0 15px rgba(204, 0, 255, 0.3)',
+        'glow-sm-primary': '0 0 10px rgba(255, 0, 204, 0.3)',
+        'glow-sm-secondary': '0 0 10px rgba(0, 255, 102, 0.25)',
+        'glow-sm-accent': '0 0 10px rgba(204, 0, 255, 0.25)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -45,8 +47,8 @@ export default {
       },
       keyframes: {
         glow: {
-          '0%': { boxShadow: '0 0 15px rgba(250, 45, 72, 0.3)' },
-          '100%': { boxShadow: '0 0 25px rgba(250, 45, 72, 0.5)' },
+          '0%': { boxShadow: '0 0 15px rgba(255, 0, 204, 0.3)' },
+          '100%': { boxShadow: '0 0 25px rgba(255, 0, 204, 0.5)' },
         },
       },
     },

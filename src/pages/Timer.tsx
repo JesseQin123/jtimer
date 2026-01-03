@@ -3,19 +3,31 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTimer, formatTime, formatDuration } from '@/hooks/useTimer'
 import { useHIITTimer } from '@/hooks/useHIITTimer'
 import { useWorkouts } from '@/hooks/useWorkouts'
+import StatRing from '@/components/ui/StatRing'
 import type { HIITConfig } from '@/types'
+
+// Format seconds to "09H13M" format
+function formatLifetimeTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  return `${hours.toString().padStart(2, '0')}H${minutes.toString().padStart(2, '0')}M`
+}
 
 // Progress ring component for timer
 function TimerRing({
   progress,
+  color = '#FF00CC',
+  icon,
   children,
 }: {
   progress: number
+  color?: string
+  icon: string
   children: React.ReactNode
 }) {
-  const size = 340
-  const strokeWidth = 24
-  const radius = (size - strokeWidth) / 2
+  const size = 300
+  const strokeWidth = 16
+  const radius = 138
   const circumference = 2 * Math.PI * radius
   const dashOffset = circumference * (1 - Math.min(progress, 100) / 100)
 
@@ -39,14 +51,14 @@ function TimerRing({
         className="absolute inset-0 transform -rotate-90"
         width={size}
         height={size}
-        style={{ filter: 'drop-shadow(0 0 15px rgba(250, 45, 72, 0.4))' }}
+        style={{ filter: `drop-shadow(0 0 15px ${color}66)` }}
       >
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#FA2D48"
+          stroke={color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -55,22 +67,27 @@ function TimerRing({
         />
       </svg>
 
-      {/* Decorative dashed ring */}
-      <svg className="absolute inset-0 transform -rotate-90 scale-90 opacity-30" width={size} height={size}>
+      {/* Decorative dashed ring - yellow-green */}
+      <svg className="absolute inset-0 transform -rotate-90 scale-[0.85] opacity-60" width={size} height={size}>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#FFFFFF"
-          strokeWidth={1}
-          strokeDasharray="4 8"
+          stroke="#00FF66"
+          strokeWidth={12}
+          strokeDasharray="2 6"
         />
       </svg>
 
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         {children}
+      </div>
+
+      {/* Icon badge - top right */}
+      <div className="absolute top-0 right-4 w-14 h-14 bg-surface rounded-full border-2 border-primary flex items-center justify-center shadow-lg transform -translate-y-2 translate-x-2 z-10">
+        <span className="material-icons-round text-primary text-2xl">{icon}</span>
       </div>
     </div>
   )
@@ -79,10 +96,11 @@ function TimerRing({
 // Plank Timer Component
 function PlankTimerView() {
   const navigate = useNavigate()
-  const { saveSession, getTotalTime } = useWorkouts()
+  const { saveSession, getTotalTime, getSessionCount } = useWorkouts()
 
-  // Get total historical plank time
+  // Get stats
   const totalPlankSeconds = getTotalTime('plank')
+  const plankSessionCount = getSessionCount('plank')
 
   const handleComplete = useCallback(async (durationSeconds: number, startTime: Date) => {
     if (durationSeconds >= 5) {
@@ -111,7 +129,7 @@ function PlankTimerView() {
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Background glow */}
       <div className="fixed top-[-20%] left-[-20%] w-[80%] h-[50%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[60%] h-[40%] bg-accent/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[60%] h-[40%] bg-accent/20 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Header */}
       <header className="w-full px-6 py-4 flex justify-between items-center z-20 pt-12">
@@ -121,73 +139,71 @@ function PlankTimerView() {
         >
           <span className="material-icons-round text-white text-2xl">arrow_back_ios_new</span>
         </button>
-        <h1 className="text-lg font-semibold tracking-wide text-accent uppercase">平板支撑</h1>
+        <h1 className="text-lg font-semibold tracking-wide text-secondary uppercase">Plank Timer</h1>
         <button className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md">
-          <span className="material-icons-round text-white text-2xl">more_horiz</span>
+          <span className="material-icons-round text-white text-2xl">settings</span>
         </button>
       </header>
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col items-center justify-between px-6 pb-8 pt-4 relative z-10">
-        {/* Timer display */}
-        <div className="flex-1 flex items-center justify-center">
-          <TimerRing progress={progress}>
-            <span className="text-accent font-medium tracking-wider text-sm mb-1 uppercase">
+      <main className="flex-1 flex flex-col items-center px-6 pb-8 pt-2 relative z-10">
+        {/* Timer display - adjusted size */}
+        <div className="flex-none flex items-center justify-center mb-6">
+          <TimerRing progress={progress} color="#FF00CC" icon="fitness_center">
+            <span className="text-secondary font-medium tracking-wider text-sm mb-1 uppercase">
               {isRunning ? '进行中' : elapsedSeconds > 0 ? '已暂停' : '准备开始'}
             </span>
-            <div className="text-gradient-white font-bold text-[6.5rem] leading-none tracking-tight timer-font">
+            <div className="text-gradient-white font-bold text-[5.5rem] leading-none tracking-tight timer-font">
               {formatTime(elapsedSeconds)}
             </div>
-            <span className="text-text-secondary text-xl font-medium mt-2">
-              累计 {formatDuration(totalPlankSeconds + elapsedSeconds)}
+            <span className="text-text-secondary text-lg font-medium mt-1">
+              {formatDuration(totalPlankSeconds + elapsedSeconds)} Total
             </span>
+            <div className="mt-4 px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-xs font-medium text-white/80">HR --</span>
+            </div>
           </TimerRing>
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-2 gap-4 w-full mb-8">
-          <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
-            <div className="flex items-start justify-between">
-              <span className="material-icons-round text-primary text-2xl">timer</span>
-              <span className="text-xs font-bold text-primary uppercase">本次</span>
-            </div>
-            <div className="mt-2">
-              <span className="text-3xl font-bold text-white">{elapsedSeconds}</span>
-              <span className="text-xs text-text-secondary uppercase tracking-wider ml-1">秒</span>
-            </div>
-          </div>
-          <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
-            <div className="flex items-start justify-between">
-              <span className="material-icons-round text-accent text-2xl">fitness_center</span>
-              <span className="text-xs font-bold text-accent uppercase">累计</span>
-            </div>
-            <div className="mt-2">
-              <span className="text-3xl font-bold text-white">{formatDuration(totalPlankSeconds)}</span>
-            </div>
-          </div>
+        {/* Stats rings */}
+        <div className="w-full flex justify-center gap-6 mb-8">
+          <StatRing
+            value={formatLifetimeTime(totalPlankSeconds)}
+            label="Lifetime Plank Time"
+            icon="star"
+            color="accent"
+          />
+          <StatRing
+            value={plankSessionCount}
+            unit="次"
+            label="累计次数"
+            icon="check"
+            color="accent"
+          />
         </div>
 
         {/* Controls */}
-        <div className="w-full grid grid-cols-3 gap-6 items-center">
+        <div className="w-full flex justify-center items-center gap-8 mt-auto">
           <button
             onClick={stop}
             disabled={elapsedSeconds === 0}
-            className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group disabled:opacity-30"
+            className="w-16 h-16 rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group disabled:opacity-30"
           >
-            <span className="material-icons-round text-4xl text-accent group-hover:scale-110 transition-transform">stop</span>
+            <span className="material-icons-round text-2xl text-secondary group-hover:scale-110 transition-transform">stop</span>
           </button>
 
           <button
             onClick={isRunning ? pause : start}
-            className="aspect-square rounded-full bg-primary shadow-glow-primary flex items-center justify-center active:scale-95 hover:brightness-110 transition-all duration-200"
+            className="w-24 h-24 rounded-full bg-primary shadow-glow-primary flex items-center justify-center active:scale-95 hover:brightness-110 transition-all duration-200"
           >
-            <span className="material-icons-round text-6xl text-black">
+            <span className="material-icons-round text-5xl text-black ml-1">
               {isRunning ? 'pause' : 'play_arrow'}
             </span>
           </button>
 
-          <button className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group">
-            <span className="material-icons-round text-4xl text-white group-hover:scale-110 transition-transform">flag</span>
+          <button className="w-16 h-16 rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group">
+            <span className="material-icons-round text-2xl text-white group-hover:scale-110 transition-transform">flag</span>
           </button>
         </div>
       </main>
@@ -198,7 +214,7 @@ function PlankTimerView() {
 // HIIT Timer Component
 function HIITTimerView() {
   const navigate = useNavigate()
-  const { saveSession, getTotalTime } = useWorkouts()
+  const { saveSession, getTotalTime, getSessionCount } = useWorkouts()
   const [config, setConfig] = useState<HIITConfig>({
     workSeconds: 30,
     restSeconds: 10,
@@ -206,8 +222,9 @@ function HIITTimerView() {
   })
   const [showConfig, setShowConfig] = useState(false)
 
-  // Get total historical HIIT time
+  // Get stats
   const totalHiitSeconds = getTotalTime('hiit')
+  const hiitSessionCount = getSessionCount('hiit')
 
   const handleComplete = useCallback(async (totalSeconds: number, hiitConfig: HIITConfig, startTime: Date) => {
     if (totalSeconds >= 10) {
@@ -240,14 +257,13 @@ function HIITTimerView() {
   const totalConfigTime = config.rounds * (config.workSeconds + config.restSeconds) - config.restSeconds
   const progress = isIdle ? 0 : isCompleted ? 100 : (state.totalElapsed / totalConfigTime) * 100
 
-  const phaseLabel = isWork ? '运动' : isRest ? '休息' : isCompleted ? '完成!' : '准备开始'
-  const ringColor = isWork ? '#FA2D48' : isRest ? '#F97316' : '#FA2D48'
+  const ringColor = isWork ? '#FF00CC' : isRest ? '#F97316' : '#FF00CC'
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Background glow */}
       <div className="fixed top-[-20%] left-[-20%] w-[80%] h-[50%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[60%] h-[40%] bg-accent/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[60%] h-[40%] bg-accent/20 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Header */}
       <header className="w-full px-6 py-4 flex justify-between items-center z-20 pt-12">
@@ -257,7 +273,7 @@ function HIITTimerView() {
         >
           <span className="material-icons-round text-white text-2xl">arrow_back_ios_new</span>
         </button>
-        <h1 className="text-lg font-semibold tracking-wide text-accent uppercase">HIIT 训练</h1>
+        <h1 className="text-lg font-semibold tracking-wide text-secondary uppercase">High Intensity</h1>
         <button
           onClick={() => setShowConfig(true)}
           className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md"
@@ -267,80 +283,51 @@ function HIITTimerView() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col items-center justify-between px-6 pb-8 pt-4 relative z-10">
+      <main className="flex-1 flex flex-col items-center px-6 pb-8 pt-2 relative z-10">
         {/* Timer display */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="relative" style={{ width: 340, height: 340 }}>
-            {/* Background ring */}
-            <svg className="absolute inset-0 transform -rotate-90" width={340} height={340}>
-              <circle cx={170} cy={170} r={158} fill="none" stroke="#2C2C2E" strokeWidth={24} strokeLinecap="round" />
-            </svg>
-            {/* Progress ring */}
-            <svg
-              className="absolute inset-0 transform -rotate-90"
-              width={340}
-              height={340}
-              style={{ filter: `drop-shadow(0 0 15px ${ringColor}66)` }}
-            >
-              <circle
-                cx={170}
-                cy={170}
-                r={158}
-                fill="none"
-                stroke={ringColor}
-                strokeWidth={24}
-                strokeLinecap="round"
-                strokeDasharray={992}
-                strokeDashoffset={992 * (1 - progress / 100)}
-                style={{ transition: 'stroke-dashoffset 0.3s ease-out, stroke 0.3s ease-out' }}
-              />
-            </svg>
-            {/* Center content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`font-medium tracking-wider text-sm mb-1 uppercase ${isWork ? 'text-primary' : isRest ? 'text-orange-500' : 'text-accent'}`}>
-                {!isIdle && !isCompleted ? `INTERVAL ${state.currentRound}/${state.totalRounds}` : phaseLabel}
-              </span>
-              <div className="text-gradient-white font-bold text-[6.5rem] leading-none tracking-tight timer-font">
-                {formatTime(isIdle ? totalConfigTime : isCompleted ? state.totalElapsed : state.timeRemaining)}
-              </div>
-              <span className="text-text-secondary text-xl font-medium mt-2">
-                {isIdle ? '总时长' : `${formatTime(state.totalElapsed)} 已完成`}
-              </span>
+        <div className="flex-none flex items-center justify-center mb-6">
+          <TimerRing progress={progress} color={ringColor} icon="bolt">
+            <span className={`font-medium tracking-wider text-sm mb-1 uppercase ${isWork ? 'text-primary' : isRest ? 'text-orange-500' : 'text-secondary'}`}>
+              {!isIdle && !isCompleted ? `Interval ${state.currentRound}/${state.totalRounds}` : isCompleted ? '完成!' : '准备开始'}
+            </span>
+            <div className="text-gradient-white font-bold text-[5.5rem] leading-none tracking-tight timer-font">
+              {formatTime(isIdle ? totalConfigTime : isCompleted ? state.totalElapsed : state.timeRemaining)}
             </div>
-          </div>
+            <span className="text-text-secondary text-lg font-medium mt-1">
+              {isIdle ? '总时长' : `${formatTime(state.totalElapsed)} Total`}
+            </span>
+            <div className="mt-4 px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-xs font-medium text-white/80">HR --</span>
+            </div>
+          </TimerRing>
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-2 gap-4 w-full mb-8">
-          <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
-            <div className="flex items-start justify-between">
-              <span className="material-icons-round text-primary text-2xl">timer</span>
-              <span className="text-xs font-bold text-primary uppercase">本次</span>
-            </div>
-            <div className="mt-2">
-              <span className="text-3xl font-bold text-white">{state.totalElapsed}</span>
-              <span className="text-xs text-text-secondary uppercase tracking-wider ml-1">秒</span>
-            </div>
-          </div>
-          <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
-            <div className="flex items-start justify-between">
-              <span className="material-icons-round text-accent text-2xl">bolt</span>
-              <span className="text-xs font-bold text-accent uppercase">累计</span>
-            </div>
-            <div className="mt-2">
-              <span className="text-3xl font-bold text-white">{formatDuration(totalHiitSeconds)}</span>
-            </div>
-          </div>
+        {/* Stats rings */}
+        <div className="w-full flex justify-center gap-6 mb-8">
+          <StatRing
+            value={formatLifetimeTime(totalHiitSeconds)}
+            label="Lifetime HIIT Time"
+            icon="star"
+            color="accent"
+          />
+          <StatRing
+            value={hiitSessionCount}
+            unit="次"
+            label="累计次数"
+            icon="check"
+            color="accent"
+          />
         </div>
 
         {/* Controls */}
-        <div className="w-full grid grid-cols-3 gap-6 items-center">
+        <div className="w-full flex justify-center items-center gap-8 mt-auto">
           <button
             onClick={isCompleted ? reset : stop}
             disabled={isIdle && state.totalElapsed === 0}
-            className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group disabled:opacity-30"
+            className="w-16 h-16 rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group disabled:opacity-30"
           >
-            <span className="material-icons-round text-4xl text-accent group-hover:scale-110 transition-transform">
+            <span className="material-icons-round text-2xl text-secondary group-hover:scale-110 transition-transform">
               {isCompleted ? 'refresh' : 'stop'}
             </span>
           </button>
@@ -348,15 +335,15 @@ function HIITTimerView() {
           <button
             onClick={isIdle ? start : isRunning ? pause : resume}
             disabled={isCompleted}
-            className="aspect-square rounded-full bg-primary shadow-glow-primary flex items-center justify-center active:scale-95 hover:brightness-110 transition-all duration-200 disabled:opacity-50"
+            className="w-24 h-24 rounded-full bg-primary shadow-glow-primary flex items-center justify-center active:scale-95 hover:brightness-110 transition-all duration-200 disabled:opacity-50"
           >
-            <span className="material-icons-round text-6xl text-black">
+            <span className="material-icons-round text-5xl text-black ml-1">
               {isRunning ? 'pause' : 'play_arrow'}
             </span>
           </button>
 
-          <button className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group">
-            <span className="material-icons-round text-4xl text-white group-hover:scale-110 transition-transform">flag</span>
+          <button className="w-16 h-16 rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group">
+            <span className="material-icons-round text-2xl text-white group-hover:scale-110 transition-transform">flag</span>
           </button>
         </div>
       </main>

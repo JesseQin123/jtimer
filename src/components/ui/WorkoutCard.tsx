@@ -3,7 +3,7 @@ interface WorkoutCardProps {
   subtitle: string
   icon: string
   tag: string
-  color: 'primary' | 'accent'
+  color: 'primary' | 'secondary'
   onClick: () => void
 }
 
@@ -25,14 +25,14 @@ export default function WorkoutCard({
       hoverBorder: 'group-hover:border-primary/50',
       hoverTitle: 'group-hover:text-primary',
     },
-    accent: {
-      iconBg: 'bg-accent/20',
-      iconText: 'text-accent',
-      tagBg: 'bg-accent/20 border-accent/20',
-      tagText: 'text-accent',
-      glow: 'bg-accent/20',
-      hoverBorder: 'group-hover:border-accent/50',
-      hoverTitle: 'group-hover:text-accent',
+    secondary: {
+      iconBg: 'bg-secondary/20',
+      iconText: 'text-secondary',
+      tagBg: 'bg-secondary/20 border-secondary/20',
+      tagText: 'text-secondary',
+      glow: 'bg-secondary/20',
+      hoverBorder: 'group-hover:border-secondary/50',
+      hoverTitle: 'group-hover:text-secondary',
     },
   }
 
