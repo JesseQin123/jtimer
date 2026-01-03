@@ -4,6 +4,7 @@ import Layout from './components/Layout/Layout'
 import Home from './pages/Home'
 import History from './pages/History'
 import Stats from './pages/Stats'
+import Timer from './pages/Timer'
 import Login from './pages/Login'
 import Register from './pages/Register'
 
@@ -12,8 +13,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -42,6 +43,14 @@ function App() {
         <Route path="history" element={<History />} />
         <Route path="stats" element={<Stats />} />
       </Route>
+      <Route
+        path="/timer/:type"
+        element={
+          <ProtectedRoute>
+            <Timer />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }

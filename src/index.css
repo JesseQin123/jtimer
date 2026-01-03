@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -21,8 +21,9 @@ html, body, #root {
 }
 
 body {
-  background-color: #0F172A;
-  color: #F8FAFC;
+  background-color: #000000;
+  color: #FFFFFF;
+  min-height: 100dvh;
 }
 
 /* Prevent pull-to-refresh on mobile */
@@ -39,8 +40,77 @@ body {
   scrollbar-width: none;
 }
 
-/* Timer number font */
+/* Timer number font - tabular nums for consistent width */
 .timer-font {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* Text gradient for timer display */
+.text-gradient-white {
+  background: linear-gradient(180deg, #FFFFFF 0%, #D1D1D6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-primary {
+  background: linear-gradient(to right, #FA2D48, #FF2D8F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Background blur glow effects */
+.glow-primary {
+  position: relative;
+}
+.glow-primary::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(250, 45, 72, 0.2) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.glow-accent {
+  position: relative;
+}
+.glow-accent::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(210, 255, 15, 0.15) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Material Icons sizing */
+.material-icons-round {
+  font-size: inherit;
+  line-height: 1;
+}
+
+/* Safe area for bottom navigation */
+.safe-area-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+}
+
+/* Active scale effect for buttons */
+.active-scale {
+  transition: transform 0.1s ease-out;
+}
+.active-scale:active {
+  transform: scale(0.96);
+}
+
+/* Card hover glow */
+.card-glow-primary:hover {
+  box-shadow: 0 0 30px rgba(250, 45, 72, 0.15);
+}
+.card-glow-accent:hover {
+  box-shadow: 0 0 30px rgba(210, 255, 15, 0.1);
 }

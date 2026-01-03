@@ -1,80 +1,43 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
 
 const navItems = [
-  { path: '/', icon: 'timer', label: '计时' },
+  { path: '/', icon: 'home', label: '首页' },
   { path: '/history', icon: 'history', label: '记录' },
-  { path: '/stats', icon: 'stats', label: '统计' },
+  { path: '/stats', icon: 'leaderboard', label: '统计' },
 ]
-
-function NavIcon({ icon, active }: { icon: string; active: boolean }) {
-  const color = active ? 'text-cyan-400' : 'text-slate-400'
-
-  switch (icon) {
-    case 'timer':
-      return (
-        <svg className={`w-6 h-6 ${color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <circle cx="12" cy="13" r="8" strokeWidth="2" />
-          <path strokeLinecap="round" strokeWidth="2" d="M12 9v4l2 2" />
-          <path strokeLinecap="round" strokeWidth="2" d="M12 5V3" />
-          <path strokeLinecap="round" strokeWidth="2" d="M9 2h6" />
-        </svg>
-      )
-    case 'history':
-      return (
-        <svg className={`w-6 h-6 ${color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    case 'stats':
-      return (
-        <svg className={`w-6 h-6 ${color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      )
-    default:
-      return null
-  }
-}
 
 export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { signOut } = useAuth()
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      {/* Header */}
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-white">Timer4Sport</h1>
-        <button
-          onClick={() => signOut()}
-          className="text-slate-400 hover:text-white text-sm transition-colors"
-        >
-          登出
-        </button>
-      </header>
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Background glow effects */}
+      <div className="fixed top-[-20%] left-[-20%] w-[60%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[30%] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto no-scrollbar">
+      <main className="flex-1 overflow-auto no-scrollbar pb-24 relative z-10">
         <Outlet />
       </main>
 
       {/* Bottom navigation */}
-      <nav className="bg-slate-800/80 backdrop-blur-sm border-t border-slate-700/50 px-6 py-2 safe-area-bottom">
-        <div className="flex justify-around items-center max-w-md mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-white/10 z-50 safe-area-bottom">
+        <div className="flex justify-around items-center h-20 max-w-lg mx-auto px-4">
           {navItems.map(item => {
             const isActive = location.pathname === item.path
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center py-2 px-4 transition-colors ${
-                  isActive ? 'text-cyan-400' : 'text-slate-400 hover:text-slate-200'
+                className={`flex flex-col items-center gap-1.5 py-2 px-6 transition-colors ${
+                  isActive ? 'text-primary' : 'text-text-secondary hover:text-white'
                 }`}
               >
-                <NavIcon icon={item.icon} active={isActive} />
-                <span className="text-xs mt-1">{item.label}</span>
+                <span className={`material-icons-round text-2xl ${isActive ? 'text-primary' : ''}`}>
+                  {item.icon}
+                </span>
+                <span className="text-[10px] font-medium">{item.label}</span>
               </button>
             )
           })}
