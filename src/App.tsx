@@ -5,8 +5,7 @@ import Home from './pages/Home'
 import History from './pages/History'
 import Stats from './pages/Stats'
 import Timer from './pages/Timer'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import Auth from './pages/Auth'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -29,8 +28,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Auth />} />
+      <Route path="/register" element={<Auth />} />
       <Route
         path="/"
         element={

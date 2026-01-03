@@ -137,3 +137,38 @@ body {
 .card-glow-accent:hover {
   box-shadow: 0 0 30px rgba(204, 0, 255, 0.1);
 }
+
+/* Auth page styles */
+.auth-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255, 31, 72, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 31, 72, 0.05) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+}
+
+.auth-speed-lines {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 31, 72, 0.02) 10px,
+    rgba(255, 31, 72, 0.02) 20px
+  );
+}
+
+.auth-stripes {
+  background:
+    linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+  background-size: 10px 10px;
+}
+
+.auth-float {
+  animation: auth-float 6s ease-in-out infinite;
+}
+
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
