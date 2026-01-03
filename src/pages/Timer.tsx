@@ -1,15 +1,9 @@
 import { useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useTimer, formatTime } from '@/hooks/useTimer'
+import { useTimer, formatTime, formatDuration } from '@/hooks/useTimer'
 import { useHIITTimer } from '@/hooks/useHIITTimer'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import type { HIITConfig } from '@/types'
-
-// Estimate calories: plank ~5 cal/min, HIIT ~10 cal/min
-function estimateCalories(type: string, seconds: number): number {
-  const minutes = seconds / 60
-  return Math.round(minutes * (type === 'hiit' ? 10 : 5))
-}
 
 // Progress ring component for timer
 function TimerRing({
@@ -85,7 +79,10 @@ function TimerRing({
 // Plank Timer Component
 function PlankTimerView() {
   const navigate = useNavigate()
-  const { saveSession } = useWorkouts()
+  const { saveSession, getTotalTime } = useWorkouts()
+
+  // Get total historical plank time
+  const totalPlankSeconds = getTotalTime('plank')
 
   const handleComplete = useCallback(async (durationSeconds: number, startTime: Date) => {
     if (durationSeconds >= 5) {
@@ -108,7 +105,6 @@ function PlankTimerView() {
     }
   })
 
-  const calories = estimateCalories('plank', elapsedSeconds)
   const progress = Math.min((elapsedSeconds / 300) * 100, 100) // 5 min as 100%
 
   return (
@@ -123,11 +119,11 @@ function PlankTimerView() {
           onClick={() => navigate('/')}
           className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md"
         >
-          <span className="material-icons-round text-white">arrow_back_ios_new</span>
+          <span className="material-icons-round text-white text-2xl">arrow_back_ios_new</span>
         </button>
         <h1 className="text-lg font-semibold tracking-wide text-accent uppercase">平板支撑</h1>
         <button className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md">
-          <span className="material-icons-round text-white">more_horiz</span>
+          <span className="material-icons-round text-white text-2xl">more_horiz</span>
         </button>
       </header>
 
@@ -143,7 +139,7 @@ function PlankTimerView() {
               {formatTime(elapsedSeconds)}
             </div>
             <span className="text-text-secondary text-xl font-medium mt-2">
-              {calories} 千卡
+              累计 {formatDuration(totalPlankSeconds + elapsedSeconds)}
             </span>
           </TimerRing>
         </div>
@@ -152,22 +148,21 @@ function PlankTimerView() {
         <div className="grid grid-cols-2 gap-4 w-full mb-8">
           <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
             <div className="flex items-start justify-between">
-              <span className="material-icons-round text-primary">local_fire_department</span>
-              <span className="text-xs font-bold text-primary uppercase">消耗</span>
+              <span className="material-icons-round text-primary text-2xl">timer</span>
+              <span className="text-xs font-bold text-primary uppercase">本次</span>
             </div>
             <div className="mt-2">
-              <span className="text-3xl font-bold text-white">{calories}</span>
-              <span className="text-xs text-text-secondary uppercase tracking-wider ml-1">千卡</span>
+              <span className="text-3xl font-bold text-white">{elapsedSeconds}</span>
+              <span className="text-xs text-text-secondary uppercase tracking-wider ml-1">秒</span>
             </div>
           </div>
           <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
             <div className="flex items-start justify-between">
-              <span className="material-icons-round text-accent">timer</span>
-              <span className="text-xs font-bold text-accent uppercase">目标</span>
+              <span className="material-icons-round text-accent text-2xl">fitness_center</span>
+              <span className="text-xs font-bold text-accent uppercase">累计</span>
             </div>
-            <div className="mt-2 flex items-end gap-1">
-              <span className="text-3xl font-bold text-white">{Math.min(Math.round(progress), 100)}</span>
-              <span className="text-lg font-medium text-text-secondary mb-1">%</span>
+            <div className="mt-2">
+              <span className="text-3xl font-bold text-white">{formatDuration(totalPlankSeconds)}</span>
             </div>
           </div>
         </div>
@@ -179,20 +174,20 @@ function PlankTimerView() {
             disabled={elapsedSeconds === 0}
             className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group disabled:opacity-30"
           >
-            <span className="material-icons-round text-3xl text-accent group-hover:scale-110 transition-transform">stop</span>
+            <span className="material-icons-round text-4xl text-accent group-hover:scale-110 transition-transform">stop</span>
           </button>
 
           <button
             onClick={isRunning ? pause : start}
             className="aspect-square rounded-full bg-primary shadow-glow-primary flex items-center justify-center active:scale-95 hover:brightness-110 transition-all duration-200"
           >
-            <span className="material-icons-round text-5xl text-black ml-1">
+            <span className="material-icons-round text-6xl text-black">
               {isRunning ? 'pause' : 'play_arrow'}
             </span>
           </button>
 
           <button className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group">
-            <span className="material-icons-round text-3xl text-white group-hover:scale-110 transition-transform">flag</span>
+            <span className="material-icons-round text-4xl text-white group-hover:scale-110 transition-transform">flag</span>
           </button>
         </div>
       </main>
@@ -203,13 +198,16 @@ function PlankTimerView() {
 // HIIT Timer Component
 function HIITTimerView() {
   const navigate = useNavigate()
-  const { saveSession } = useWorkouts()
+  const { saveSession, getTotalTime } = useWorkouts()
   const [config, setConfig] = useState<HIITConfig>({
     workSeconds: 30,
     restSeconds: 10,
     rounds: 8,
   })
   const [showConfig, setShowConfig] = useState(false)
+
+  // Get total historical HIIT time
+  const totalHiitSeconds = getTotalTime('hiit')
 
   const handleComplete = useCallback(async (totalSeconds: number, hiitConfig: HIITConfig, startTime: Date) => {
     if (totalSeconds >= 10) {
@@ -241,7 +239,6 @@ function HIITTimerView() {
 
   const totalConfigTime = config.rounds * (config.workSeconds + config.restSeconds) - config.restSeconds
   const progress = isIdle ? 0 : isCompleted ? 100 : (state.totalElapsed / totalConfigTime) * 100
-  const calories = estimateCalories('hiit', state.totalElapsed)
 
   const phaseLabel = isWork ? '运动' : isRest ? '休息' : isCompleted ? '完成!' : '准备开始'
   const ringColor = isWork ? '#FA2D48' : isRest ? '#F97316' : '#FA2D48'
@@ -258,14 +255,14 @@ function HIITTimerView() {
           onClick={() => navigate('/')}
           className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md"
         >
-          <span className="material-icons-round text-white">arrow_back_ios_new</span>
+          <span className="material-icons-round text-white text-2xl">arrow_back_ios_new</span>
         </button>
         <h1 className="text-lg font-semibold tracking-wide text-accent uppercase">HIIT 训练</h1>
         <button
           onClick={() => setShowConfig(true)}
           className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md"
         >
-          <span className="material-icons-round text-white">settings</span>
+          <span className="material-icons-round text-white text-2xl">settings</span>
         </button>
       </header>
 
@@ -317,22 +314,21 @@ function HIITTimerView() {
         <div className="grid grid-cols-2 gap-4 w-full mb-8">
           <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
             <div className="flex items-start justify-between">
-              <span className="material-icons-round text-primary">local_fire_department</span>
-              <span className="text-xs font-bold text-primary uppercase">消耗</span>
+              <span className="material-icons-round text-primary text-2xl">timer</span>
+              <span className="text-xs font-bold text-primary uppercase">本次</span>
             </div>
             <div className="mt-2">
-              <span className="text-3xl font-bold text-white">{calories}</span>
-              <span className="text-xs text-text-secondary uppercase tracking-wider ml-1">千卡</span>
+              <span className="text-3xl font-bold text-white">{state.totalElapsed}</span>
+              <span className="text-xs text-text-secondary uppercase tracking-wider ml-1">秒</span>
             </div>
           </div>
           <div className="bg-surface/80 backdrop-blur-xl rounded-3xl p-5 border border-white/5">
             <div className="flex items-start justify-between">
-              <span className="material-icons-round text-accent">timer</span>
-              <span className="text-xs font-bold text-accent uppercase">进度</span>
+              <span className="material-icons-round text-accent text-2xl">bolt</span>
+              <span className="text-xs font-bold text-accent uppercase">累计</span>
             </div>
-            <div className="mt-2 flex items-end gap-1">
-              <span className="text-3xl font-bold text-white">{Math.min(Math.round(progress), 100)}</span>
-              <span className="text-lg font-medium text-text-secondary mb-1">%</span>
+            <div className="mt-2">
+              <span className="text-3xl font-bold text-white">{formatDuration(totalHiitSeconds)}</span>
             </div>
           </div>
         </div>
@@ -344,7 +340,7 @@ function HIITTimerView() {
             disabled={isIdle && state.totalElapsed === 0}
             className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group disabled:opacity-30"
           >
-            <span className="material-icons-round text-3xl text-accent group-hover:scale-110 transition-transform">
+            <span className="material-icons-round text-4xl text-accent group-hover:scale-110 transition-transform">
               {isCompleted ? 'refresh' : 'stop'}
             </span>
           </button>
@@ -354,13 +350,13 @@ function HIITTimerView() {
             disabled={isCompleted}
             className="aspect-square rounded-full bg-primary shadow-glow-primary flex items-center justify-center active:scale-95 hover:brightness-110 transition-all duration-200 disabled:opacity-50"
           >
-            <span className="material-icons-round text-5xl text-black ml-1">
+            <span className="material-icons-round text-6xl text-black">
               {isRunning ? 'pause' : 'play_arrow'}
             </span>
           </button>
 
           <button className="aspect-square rounded-full bg-surface border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all duration-200 group">
-            <span className="material-icons-round text-3xl text-white group-hover:scale-110 transition-transform">flag</span>
+            <span className="material-icons-round text-4xl text-white group-hover:scale-110 transition-transform">flag</span>
           </button>
         </div>
       </main>
