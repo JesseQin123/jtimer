@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { useAuth } from './hooks/useAuth'
 import Layout from './components/Layout/Layout'
 import Home from './pages/Home'
@@ -27,6 +28,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
+    <>
+    <Analytics />
     <Routes>
       <Route path="/login" element={<Auth />} />
       <Route path="/register" element={<Auth />} />
@@ -51,6 +54,7 @@ function App() {
         }
       />
     </Routes>
+    </>
   )
 }
 
